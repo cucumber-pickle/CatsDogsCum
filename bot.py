@@ -214,6 +214,7 @@ class CatsDogs:
     def complete_video_tasks(self, query: str, video_id: int, code: str, retries=3):
         url = 'https://api.catsdogs.live/tasks/claim'
         data = json.dumps({'task_id': video_id, 'verification_code': code})
+
         self.headers.update({
             'Content-Type': 'application/json',
             'X-Telegram-Web-App-Data': query
@@ -222,6 +223,8 @@ class CatsDogs:
         for attempt in range(retries):
             try:
                 response = self.session.post(url, headers=self.headers, data=data)
+                print(response.text)
+                print(response.status_code)
                 if response.status_code == 200:
                     return response.json()
                 else:
@@ -237,9 +240,10 @@ class CatsDogs:
                         end="\r",
                         flush=True
                     )
-                    time.sleep(2)
+                    time.sleep(1)
                 else:
                     return None
+
 
     def sub_tasks(self, query: str, task_id: int, retries=3):
         url = f'https://api.catsdogs.live/tasks/{task_id}/subtasks'
@@ -380,20 +384,39 @@ class CatsDogs:
 
                     if task_type == "video_code":
                         video_tasks = self.load_task_list()
-                        for list in video_tasks:
-                            code = list['code']
+                        code = None
+                        for i in video_tasks:
+                            if i['id'] == task_id:
+                                title = i['title']
+                                code = i['code']
 
+                        if code:
                             complete_video = self.complete_video_tasks(query, task_id, code)
                             if complete_video:
                                 self.log(
                                     f"{Fore.MAGENTA + Style.BRIGHT}[ Task{Style.RESET_ALL}"
-                                    f"{Fore.WHITE + Style.BRIGHT} {list['title']} {Style.RESET_ALL}"
+                                    f"{Fore.WHITE + Style.BRIGHT} {title} {Style.RESET_ALL}"
                                     f"{Fore.GREEN + Style.BRIGHT}Is Completed{Style.RESET_ALL}"
                                     f"{Fore.MAGENTA + Style.BRIGHT} ] [ Reward{Style.RESET_ALL}"
                                     f"{Fore.WHITE + Style.BRIGHT} {reward} $FOOD {Style.RESET_ALL}"
                                     f"{Fore.MAGENTA + Style.BRIGHT}]{Style.RESET_ALL}"
                                 )
+                            else:
+                                self.log(
+                                    f"{Fore.MAGENTA + Style.BRIGHT}[ Task{Style.RESET_ALL}"
+                                    f"{Fore.WHITE + Style.BRIGHT} {title} {Style.RESET_ALL}"
+                                    f"{Fore.RED + Style.BRIGHT} Isn't Completed{Style.RESET_ALL}"
+                                    f"{Fore.MAGENTA + Style.BRIGHT} ]{Style.RESET_ALL}"
+                                )
                             time.sleep(1)
+                        else:
+                            self.log(
+                                f"{Fore.MAGENTA + Style.BRIGHT}[ Task{Style.RESET_ALL}"
+                                f"{Fore.WHITE + Style.BRIGHT} {title} {Style.RESET_ALL}"
+                                f"{Fore.RED + Style.BRIGHT} The answer for video is not ready yet{Style.RESET_ALL}"
+                                f"{Fore.MAGENTA + Style.BRIGHT} ]{Style.RESET_ALL}"
+                            )
+
 
                     elif task_type == "folder":
                         sub_tasks = self.sub_tasks(query, str(task_id))
