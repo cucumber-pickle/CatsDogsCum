@@ -39,18 +39,19 @@ config = load_config()
 
 def get_headers(account) -> dict:
     return {
-        'Accept': 'application/json, text/plain, */*',
+        'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.9',
         'Cache-Control': 'no-cache',
         'Host': 'api.catsdogs.live',
-        'Origin': 'https://catsdogs.live',
+        'Origin': 'https://foodz.live',
         'Pragma': 'no-cache',
-        'Referer': 'https://catsdogs.live/',
+        'Referer': 'https://foodz.live/',
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
+        'Sec-Fetch-Site': 'cross-site',
         'User-Agent': get_user_agent(account)
     }
+
 
 def generate_random_user_agent(device_type='android', browser_type='chrome'):
     chrome_versions = list(range(110, 127))
